@@ -1,0 +1,4 @@
+THIRPARTY=false
+HW_PROJECT_REFERENCE=P01A_SPGD_U1_V1_Hw_Test_hw_platform_0
+PROCESSOR=microblaze_0
+MSS_FILE=system.mss
