@@ -1,380 +1,170 @@
+#include <stdio.h>
 #include "xparameters.h"
 #include "xuartlite.h"
-#include "xintc.h"
-#include "xil_exception.h"
+#include "xstatus.h"
 #include "uart.h"
 
- static XUartLite g_UartDebugLite;
- static XUartLite g_UartScreenLite;
- static XUartLite g_UartNetLite;
-
-
  /*******************************************************************************
- * 函数名称:SendHandler
- * 描    述: 发送中断回调函数
+ * 函数名称:UartOpen
+ * 描    述: 打开串口设备
  *
- * 输    入:无
- * 输    出:
- * 返    回:
+ * 输    入:
+ 	 	 UartLite:需实例化的句柄
+ 	 	 DeviceId:串口ID号
+ * 输    出: UartLite:已打开句柄
+ * 返    回: XST_SUCCESS 成功, XST_FAILURE 失败.
  * 修改日期:2016年6月21日
  *******************************************************************************/
- void SendHandler(void *CallBackRef, unsigned int EventData)
- {
-
- }
-
- /*******************************************************************************
- * 函数名称:RecvHandler
- * 描    述:  接收中断回调函数
- *
- * 输    入:无
- * 输    出:
- * 返    回:
- * 修改日期:2016年6月21日
- *******************************************************************************/
- void RecvHandler(void *CallBackRef, unsigned int EventData)
- {
-
- }
-
-
-
- /*******************************************************************************
- * 函数名称:UartDebugConfiguration
- * 描    述: 调试串口配置
- *
- * 输    入:无
- * 输    出:
- * 返    回:
- * 修改日期:2016年6月21日
- *******************************************************************************/
-int UartDebugConfiguration(void)
+int UartOpen(XUartLite *UartLite, unsigned int DeviceId)
 {
+	int Status = 0;
 
-	int Status;
-
-	/*
-	 * Initialize the UartLite driver so that it's ready to use.
-	 */
-	Status = XUartLite_Initialize(&g_UartDebugLite, UART0_DEBUG);
-	if (Status != XST_SUCCESS) {
+	if(UartLite == NULL) {
+		print("#ERR: UartOpen UartLite NULL\n");
 		return XST_FAILURE;
 	}
 
-	/*
-	 * Perform a self-test to ensure that the hardware was built correctly.
-	 */
-	Status = XUartLite_SelfTest(&g_UartDebugLite);
+	Status = XUartLite_Initialize(UartLite, DeviceId);
 	if (Status != XST_SUCCESS) {
+		print("#ERR: UartOpen XUartLite_Initialize Err\n");
 		return XST_FAILURE;
 	}
 
-	/*
-	 * Connect the UartLite to the interrupt subsystem such that interrupts can
-	 * occur. This function is application specific.
-	 */
-	//Status = SetupInterruptSystem(&g_UartDebugLite);
+	Status = XUartLite_SelfTest(UartLite);
 	if (Status != XST_SUCCESS) {
+		print("#ERR: UartOpen XUartLite_SelfTest Err\n");
 		return XST_FAILURE;
 	}
 
-	/*
-	 * Setup the handlers for the UartLite that will be called from the
-	 * interrupt context when data has been sent and received, specify a
-	 * pointer to the UartLite driver instance as the callback reference so
-	 * that the handlers are able to access the instance data.
-	 */
-	XUartLite_SetSendHandler(&g_UartDebugLite, SendHandler, &g_UartDebugLite);
-	XUartLite_SetRecvHandler(&g_UartDebugLite, RecvHandler, &g_UartDebugLite);
+	return XST_SUCCESS;
+}
 
-	/*
-	 * Enable the interrupt of the UartLite so that interrupts will occur.
-	 */
-	XUartLite_EnableInterrupt(&g_UartDebugLite);
+
+/*******************************************************************************
+* 函数名称:UartSend
+* 描    述: 发送数据
+*
+* 输    入:
+	 	 UartLite:已打开句柄
+	 	 DataBufferPtr: 发送的数据缓冲区
+	 	 NumBytes： 发送的数据长度
+* 输    出: NULL
+* 返    回: 发送的字节数长度.
+* 修改日期:2016年6月21日
+*******************************************************************************/
+unsigned int UartSend(XUartLite *UartLite, u8 *DataBufferPtr, unsigned int NumBytes)
+{
+	if(UartLite == NULL) {
+		print("#ERR: UartSend UartLite NULL\n");
+		return -1;
+	}
+
+ 	return XUartLite_Send (UartLite, DataBufferPtr, NumBytes);
 }
 
 /*******************************************************************************
-* 函数名称:UartDebugRecv
-* 描    述: 调试串口接收
+* 函数名称:UartRecv
+* 描    述: 接收数据
 *
 * 输    入:
-	DataBufferPtr：接收缓冲区
-	NumBytes： 接收数据长度
-* 输    出:
-* 返    回: 接收数据实际长度
+	 	 UartLite:已打开句柄
+	 	 DataBufferPtr: 接收数据缓冲区
+	 	 NumBytes： 接收长度
+* 输    出: NULL
+* 返    回: 实际接收字节数长度.
 * 修改日期:2016年6月21日
 *******************************************************************************/
-unsigned int UartDebugRecv(u8 *DataBufferPtr, unsigned int NumBytes)
+unsigned int UartRecv(XUartLite *UartLite, u8 *DataBufferPtr, unsigned int NumBytes)
 {
-	if (NULL == DataBufferPtr)
+	if(UartLite == NULL) {
+		print("#ERR: UartRecv UartLite NULL\n");
 		return 0;
-
-	return  XUartLite_Recv(&g_UartDebugLite, DataBufferPtr, NumBytes);
-}
-
-/*******************************************************************************
-* 函数名称:UartDebugSend
-* 描    述: 调试串口发送
-*
-* 输    入:
-	DataBufferPtr：发送缓冲区
-	NumBytes： 发送数据长度
-* 输    出:
-* 返    回: 发送数据实际长度
-* 修改日期:2016年6月21日
-*******************************************************************************/
-unsigned int UartDebugSend(u8 *DataBufferPtr, unsigned int NumBytes)
-{
-	if (NULL == DataBufferPtr)
-		return 0;
-
-	return  XUartLite_Send(&g_UartDebugLite, DataBufferPtr, NumBytes);
-}
-
-
-/*******************************************************************************
-* 函数名称:UartScreenGetCharsInRxBuf
-* 描    述:  接收缓冲区已接收的数据
-*
-* 输    入:无
-* 输    出:
-* 返    回:
-* 修改日期:2016年6月21日
-*******************************************************************************/
-int UartScreenGetCharsInRxBuf()
-{
-	return XUartLite_ReceiveBuffer(&g_UartScreenLite);
-}
-
-
-/*******************************************************************************
-* 函数名称:UartScreenConfiguration
-* 描    述: 屏幕串口配置
-*
-* 输    入:无
-* 输    出:
-* 返    回:
-* 修改日期:2016年6月21日
-*******************************************************************************/
-int UartScreenConfiguration(void)
-{
-
-	int Status;
-
-	/*
-	 * Initialize the UartLite driver so that it's ready to use.
-	 */
-	Status = XUartLite_Initialize(&g_UartScreenLite, UART1_SCREEN);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
 	}
 
-	/*
-	 * Perform a self-test to ensure that the hardware was built correctly.
-	 */
-	Status = XUartLite_SelfTest(&g_UartScreenLite);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
+	return XUartLite_Recv (UartLite, DataBufferPtr, NumBytes);
+}
+
+/*******************************************************************************
+* 函数名称:UartRstFifos
+* 描    述: 复位串口缓冲区数据
+*
+* 输    入:
+	 	 UartLite:已打开句柄
+* 输    出: NULL
+* 返    回: NULL
+* 修改日期:2016年6月21日
+*******************************************************************************/
+void UartRstFifos(XUartLite *UartLite)
+{
+	if(UartLite == NULL) {
+		print("#ERR: UartRstFifos UartLite NULL\n");
+		return ;
 	}
 
-	/*
-	 * Connect the UartLite to the interrupt subsystem such that interrupts can
-	 * occur. This function is application specific.
-	 */
-	//Status = SetupInterruptSystem(&g_UartScreenLite);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
+	XUartLite_ResetFifos(UartLite);
+}
+
+
+/*******************************************************************************
+* 函数名称:UartIsSending
+* 描    述: 查询串口是否正在发送数据
+*
+* 输    入:
+	 	 UartLite:已打开句柄
+* 输    出: NULL
+* 返    回: 大于0正在发送数据，否则非发送数据。
+* 修改日期:2016年6月21日
+*******************************************************************************/
+int UartIsSending(XUartLite *UartLite)
+{
+	if(UartLite == NULL) {
+		print("#ERR: UartIsSending UartLite NULL\n");
+		return -1;
 	}
 
-	/*
-	 * Setup the handlers for the UartLite that will be called from the
-	 * interrupt context when data has been sent and received, specify a
-	 * pointer to the UartLite driver instance as the callback reference so
-	 * that the handlers are able to access the instance data.
-	 */
-	XUartLite_SetSendHandler(&g_UartScreenLite, SendHandler, &g_UartScreenLite);
-	XUartLite_SetRecvHandler(&g_UartScreenLite, RecvHandler, &g_UartScreenLite);
-
-	/*
-	 * Enable the interrupt of the UartLite so that interrupts will occur.
-	 */
-	XUartLite_EnableInterrupt(&g_UartScreenLite);
+	return XUartLite_IsSending(UartLite);
 }
 
 /*******************************************************************************
-* 函数名称:UartScreenRecv
-* 描    述: 屏幕串口接收
+* 函数名称:UartIsSendBuffer
+* 描    述: 查询串口是否正在发送数据
 *
 * 输    入:
-	DataBufferPtr：接收缓冲区
-	NumBytes： 接收数据长度
-* 输    出:
-* 返    回: 接收数据实际长度
+	 	 UartLite:已打开句柄
+* 输    出: NULL
+* 返    回: 发送缓冲区剩余的数据量。
 * 修改日期:2016年6月21日
 *******************************************************************************/
-unsigned int UartScreenRecv(u8 *DataBufferPtr, unsigned int NumBytes)
+unsigned int UartSendBuffe(XUartLite *UartLite)
 {
-	if (NULL == DataBufferPtr)
+	if(UartLite == NULL) {
+		print("#ERR: UartSendBuffe UartLite NULL\n");
 		return 0;
-
-	return  XUartLite_Recv(&g_UartScreenLite, DataBufferPtr, NumBytes);
-}
-
-/*******************************************************************************
-* 函数名称:UartScreenGetChar
-* 描    述: 屏幕串口接收一个字节
-*
-* 输    入:
-	DataBufferPtr：接收缓冲区
-* 输    出:
-* 返    回: 接收数据实际长度
-* 修改日期:2016年6月21日
-*******************************************************************************/
-unsigned int UartScreenGetChar(u8 *DataBufferPtr)
-{
-	if (NULL == DataBufferPtr)
-		return 0;
-
-	return  XUartLite_Recv(&g_UartScreenLite, DataBufferPtr, 1);
-}
-
-/*******************************************************************************
-* 函数名称:UartScreenSend
-* 描    述: 屏幕串口发送
-*
-* 输    入:
-	DataBufferPtr：发送缓冲区
-	NumBytes： 发送数据长度
-* 输    出:
-* 返    回: 发送数据实际长度
-* 修改日期:2016年6月21日
-*******************************************************************************/
-unsigned int UartScreenSend(u8 *DataBufferPtr, unsigned int NumBytes)
-{
-	if (NULL == DataBufferPtr)
-		return 0;
-
-	return  XUartLite_Send(&g_UartScreenLite, DataBufferPtr, NumBytes);
-}
-
-
-
-/*******************************************************************************
-* 函数名称:UartNetConfiguration
-* 描    述: 网络串口配置
-*
-* 输    入:无
-* 输    出:
-* 返    回:
-* 修改日期:2016年6月21日
-*******************************************************************************/
-int UartNetConfiguration(void)
-{
-
-	int Status;
-
-	/*
-	 * Initialize the UartLite driver so that it's ready to use.
-	 */
-	Status = XUartLite_Initialize(&g_UartNetLite, UART2_NET);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
 	}
 
-	/*
-	 * Perform a self-test to ensure that the hardware was built correctly.
-	 */
-	Status = XUartLite_SelfTest(&g_UartNetLite);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
+	return XUartLite_SendBuffer(UartLite);
+}
+
+/*******************************************************************************
+* 函数名称:UartIsSendBuffer
+* 描    述: 查询串口是否正在发送数据
+*
+* 输    入:
+	 	 UartLite:已打开句柄
+* 输    出: NULL
+* 返    回: 发送缓冲区剩余的数据量。
+* 修改日期:2016年6月21日
+*******************************************************************************/
+
+unsigned int UartReceiveBuffer(XUartLite *UartLite)
+{
+	if(UartLite == NULL) {
+		print("#ERR: UartReceiveBuffer UartLite NULL\n");
+		return 0;
 	}
 
-	/*
-	 * Connect the UartLite to the interrupt subsystem such that interrupts can
-	 * occur. This function is application specific.
-	 */
-	//Status = SetupInterruptSystem(&g_UartNetLite);
-	if (Status != XST_SUCCESS) {
-		return XST_FAILURE;
-	}
-
-	/*
-	 * Setup the handlers for the UartLite that will be called from the
-	 * interrupt context when data has been sent and received, specify a
-	 * pointer to the UartLite driver instance as the callback reference so
-	 * that the handlers are able to access the instance data.
-	 */
-	XUartLite_SetSendHandler(&g_UartNetLite, SendHandler, &g_UartNetLite);
-	XUartLite_SetRecvHandler(&g_UartNetLite, RecvHandler, &g_UartNetLite);
-
-	/*
-	 * Enable the interrupt of the UartLite so that interrupts will occur.
-	 */
-	XUartLite_EnableInterrupt(&g_UartNetLite);
+	return XUartLite_ReceiveBuffer (UartLite);
 }
-
-/*******************************************************************************
-* 函数名称:UartNetRecv
-* 描    述: 网络串口接收
-*
-* 输    入:
-	DataBufferPtr：接收缓冲区
-	NumBytes： 接收数据长度
-* 输    出:
-* 返    回: 接收数据实际长度
-* 修改日期:2016年6月21日
-*******************************************************************************/
-unsigned int UartNetRecv(u8 *DataBufferPtr, unsigned int NumBytes)
-{
-	if (NULL == DataBufferPtr)
-		return 0;
-
-	return  XUartLite_Recv(&g_UartNetLite, DataBufferPtr, NumBytes);
-}
-
-/*******************************************************************************
-* 函数名称:UartNetSend
-* 描    述: 网络串口发送
-*
-* 输    入:
-	DataBufferPtr：发送缓冲区
-	NumBytes： 发送数据长度
-* 输    出:
-* 返    回: 发送数据实际长度
-* 修改日期:2016年6月21日
-*******************************************************************************/
-unsigned int UartNetSend(u8 *DataBufferPtr, unsigned int NumBytes)
-{
-	if (NULL == DataBufferPtr)
-		return 0;
-
-	return  XUartLite_Send(&g_UartNetLite, DataBufferPtr, NumBytes);
-}
-
-
-/*******************************************************************************
-* 函数名称:UartInit
-* 描    述: 串口初始化
-*
-* 输    入:
-* 输    出:
-* 返    回:
-* 修改日期:2016年6月21日
-*******************************************************************************/
-int UartInit(void)
-{
-	UartScreenConfiguration();
-	UartNetConfiguration();
-	return 0;
-}
-
-
-
-
-
-
-
-
 
 
 

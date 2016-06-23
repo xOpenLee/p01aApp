@@ -23,4 +23,11 @@
 		<nature>org.eclipse.cdt.managedbuilder.core.managedBuildNature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<linkedResources>
+		<link>
+			<name>src/SerialScreen/serialscreen.c</name>
+			<type>1</type>
+			<location>D:/proj/P01A/xilinxproj/p01aApp/src/SerialScreen/serialscreen.c</location>
+		</link>
+	</linkedResources>
 </projectDescription>

@@ -216,5 +216,5 @@ void SetScreenRtc(void);
 void MenuChange(uint8_t MenuNO);
 uint32_t GetMealPrice(uint8_t meal_type,uint8_t count);
 uint32_t GetMealLastPrice(uint8_t meal_type,uint8_t count);
-
+extern void SerialScreenInit(void);
 #endif
