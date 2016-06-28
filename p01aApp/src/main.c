@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "platform.h"
 #include "serialscreen.h"
+#include "utils.h"
 
 #define PROJ_NAME "P01A"
 #define PROJ_VERSION "V0.0.1"
@@ -16,8 +17,8 @@
 *******************************************************************************/
 static void PrintVer(void)
 {
-	xil_printf("#INFO: Proj Name %s %s\n", PROJ_NAME, PROJ_VERSION);
-	xil_printf("#INFO: Built Time %s %s\n", __TIME__, __DATE__);
+	printf("#INFO: Proj Name %s %s\n", PROJ_NAME, PROJ_VERSION);
+	printf("#INFO: Built Time %s %s\n", __TIME__, __DATE__);
 }
 
 int main()
