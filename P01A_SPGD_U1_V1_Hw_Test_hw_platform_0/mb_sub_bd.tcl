@@ -162,7 +162,6 @@ CONFIG.FREQ_HZ {25000000} \
 CONFIG.PortWidth {32} \
 CONFIG.SENSITIVITY {EDGE_RISING:NULL:NULL} \
  ] $mb_intr
-  set rstn [ create_bd_port -dir O -from 0 -to 0 -type rst rstn ]
   set sys_clk_locked [ create_bd_port -dir O sys_clk_locked ]
   set sys_rst_n [ create_bd_port -dir I -type rst sys_rst_n ]
   set_property -dict [ list \
@@ -176,7 +175,8 @@ CONFIG.POLARITY {ACTIVE_LOW} \
   set axi_apb_bridge_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_apb_bridge:3.0 axi_apb_bridge_0 ]
   set_property -dict [ list \
 CONFIG.C_APB_NUM_SLAVES {1} \
-CONFIG.C_DPHASE_TIMEOUT {0} \
+CONFIG.C_DPHASE_TIMEOUT {16} \
+CONFIG.C_M_APB_PROTOCOL {apb3} \
  ] $axi_apb_bridge_0
 
   # Create instance: axi_intc_0, and set properties
@@ -196,8 +196,8 @@ CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
 CONFIG.ENABLE_PROTOCOL_CHECKERS {0} \
 CONFIG.NUM_MI {5} \
 CONFIG.NUM_SI {1} \
-CONFIG.STRATEGY {2} \
-CONFIG.XBAR_DATA_WIDTH {64} \
+CONFIG.S00_HAS_DATA_FIFO {0} \
+CONFIG.STRATEGY {0} \
  ] $axi_interconnect_0
 
   # Create instance: axi_uartlite_0, and set properties
@@ -290,10 +290,11 @@ CONFIG.C_USE_EXT_NM_BRK {0} \
 CONFIG.C_USE_HW_MUL {1} \
 CONFIG.C_USE_ICACHE {0} \
 CONFIG.C_USE_INTERRUPT {1} \
+CONFIG.C_USE_MMU {3} \
 CONFIG.C_USE_MSR_INSTR {1} \
 CONFIG.C_USE_PCMP_INSTR {1} \
 CONFIG.G_TEMPLATE_LIST {6} \
-CONFIG.G_USE_EXCEPTIONS {0} \
+CONFIG.G_USE_EXCEPTIONS {1} \
  ] $microblaze_0
 
   # Create instance: proc_sys_reset_0, and set properties
@@ -304,6 +305,10 @@ CONFIG.C_AUX_RESET_HIGH {0} \
 
   # Create interface connections
   connect_bd_intf_net -intf_net S00_AXI_1 [get_bd_intf_pins axi_interconnect_0/S00_AXI] [get_bd_intf_pins microblaze_0/M_AXI_DP]
+  set_property -dict [ list \
+HDL_ATTRIBUTE.MARK_DEBUG {true} \
+HDL_ATTRIBUTE.DEBUG_IN_BD {true} \
+ ] [get_bd_intf_nets S00_AXI_1]
   connect_bd_intf_net -intf_net axi_apb_bridge_0_APB_M [get_bd_intf_ports m_apb] [get_bd_intf_pins axi_apb_bridge_0/APB_M]
   connect_bd_intf_net -intf_net axi_intc_0_interrupt [get_bd_intf_pins axi_intc_0/interrupt] [get_bd_intf_pins microblaze_0/INTERRUPT]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_apb_bridge_0/AXI4_LITE] [get_bd_intf_pins axi_interconnect_0/M00_AXI]
@@ -332,7 +337,7 @@ CONFIG.C_AUX_RESET_HIGH {0} \
   connect_bd_net -net intr_1 [get_bd_ports mb_intr] [get_bd_pins axi_intc_0/intr]
   connect_bd_net -net mdm_0_Debug_SYS_Rst [get_bd_pins mdm_0/Debug_SYS_Rst] [get_bd_pins proc_sys_reset_0/mb_debug_sys_rst]
   connect_bd_net -net proc_sys_reset_0_mb_reset [get_bd_pins axi_intc_0/processor_rst] [get_bd_pins lmb_bram_if_cntlr_0/LMB_Rst] [get_bd_pins microblaze_0/Reset] [get_bd_pins proc_sys_reset_0/mb_reset]
-  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_ports rstn] [get_bd_pins axi_apb_bridge_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/M03_ARESETN] [get_bd_pins axi_interconnect_0/M04_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_uartlite_0/s_axi_aresetn] [get_bd_pins axi_uartlite_1/s_axi_aresetn] [get_bd_pins axi_uartlite_2/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
+  connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins axi_apb_bridge_0/s_axi_aresetn] [get_bd_pins axi_intc_0/s_axi_aresetn] [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/M03_ARESETN] [get_bd_pins axi_interconnect_0/M04_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins axi_uartlite_0/s_axi_aresetn] [get_bd_pins axi_uartlite_1/s_axi_aresetn] [get_bd_pins axi_uartlite_2/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn]
   connect_bd_net -net sys_rst_1 [get_bd_ports sys_rst_n] [get_bd_pins clk_wiz_0/resetn] [get_bd_pins proc_sys_reset_0/ext_reset_in]
 
   # Create address segments
@@ -342,7 +347,7 @@ CONFIG.C_AUX_RESET_HIGH {0} \
   create_bd_addr_seg -range 0x10000 -offset 0x40620000 [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs axi_uartlite_2/S_AXI/Reg] SEG_axi_uartlite_2_Reg
   create_bd_addr_seg -range 0x10000 -offset 0x0 [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs lmb_bram_if_cntlr_0/SLMB/Mem] SEG_lmb_bram_if_cntlr_0_Mem
   create_bd_addr_seg -range 0x10000 -offset 0x0 [get_bd_addr_spaces microblaze_0/Instruction] [get_bd_addr_segs lmb_bram_if_cntlr_0/SLMB1/Mem] SEG_lmb_bram_if_cntlr_0_Mem
-  create_bd_addr_seg -range 0x10000 -offset 0x20000000 [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs m_apb/Reg] SEG_mb_sub_Reg
+  create_bd_addr_seg -range 0x10000 -offset 0x61000000 [get_bd_addr_spaces microblaze_0/Data] [get_bd_addr_segs m_apb/Reg] SEG_mb_sub_Reg
 
   # Perform GUI Layout
   regenerate_bd_layout -layout_string {
@@ -362,50 +367,49 @@ preplace port sys_rst_n -pg 1 -y 160 -defaultsOSRD
 preplace port clk_50m -pg 1 -y 110 -defaultsOSRD
 preplace port sys_clk_locked -pg 1 -y 190 -defaultsOSRD
 preplace port clk_75m -pg 1 -y 780 -defaultsOSRD
-preplace portBus rstn -pg 1 -y 800 -defaultsOSRD
 preplace portBus mb_intr -pg 1 -y 960 -defaultsOSRD
 preplace inst axi_intc_0 -pg 1 -lvl 1 -y 950 -defaultsOSRD
 preplace inst proc_sys_reset_0 -pg 1 -lvl 3 -y 340 -defaultsOSRD
 preplace inst mdm_0 -pg 1 -lvl 1 -y 770 -defaultsOSRD
-preplace inst blk_mem_gen_0 -pg 1 -lvl 4 -y 940 -defaultsOSRD
-preplace inst microblaze_0 -pg 1 -lvl 2 -y 910 -defaultsOSRD
+preplace inst blk_mem_gen_0 -pg 1 -lvl 4 -y 1260 -defaultsOSRD
 preplace inst axi_uartlite_0 -pg 1 -lvl 4 -y 470 -defaultsOSRD
+preplace inst axi_apb_bridge_0 -pg 1 -lvl 4 -y 750 -defaultsOSRD
+preplace inst microblaze_0 -pg 1 -lvl 2 -y 910 -defaultsOSRD
 preplace inst axi_interconnect_0 -pg 1 -lvl 3 -y 610 -defaultsOSRD
-preplace inst axi_apb_bridge_0 -pg 1 -lvl 4 -y 590 -defaultsOSRD
-preplace inst axi_uartlite_1 -pg 1 -lvl 4 -y 710 -defaultsOSRD
+preplace inst axi_uartlite_1 -pg 1 -lvl 4 -y 1030 -defaultsOSRD
 preplace inst lmb_bram_if_cntlr_0 -pg 1 -lvl 3 -y 930 -defaultsOSRD
 preplace inst clk_wiz_0 -pg 1 -lvl 3 -y 150 -defaultsOSRD
-preplace inst axi_uartlite_2 -pg 1 -lvl 4 -y 1090 -defaultsOSRD
-preplace netloc axi_intc_0_interrupt 1 1 1 270
+preplace inst axi_uartlite_2 -pg 1 -lvl 4 -y 1410 -defaultsOSRD
+preplace netloc axi_intc_0_interrupt 1 1 1 170
 preplace netloc axi_uartlite_2_interrupt 1 4 1 NJ
-preplace netloc sys_rst_1 1 0 3 NJ 160 NJ 160 730
+preplace netloc sys_rst_1 1 0 3 NJ 160 NJ 160 640
 preplace netloc axi_uartlite_1_interrupt 1 4 1 NJ
-preplace netloc clk_wiz_0_locked 1 2 3 740 240 1070 190 NJ
+preplace netloc clk_wiz_0_locked 1 2 3 660 240 990 190 NJ
 preplace netloc axi_apb_bridge_0_APB_M 1 4 1 NJ
 preplace netloc axi_uartlite_0_interrupt 1 4 1 NJ
 preplace netloc mdm_0_Debug_SYS_Rst 1 1 2 NJ 360 N
 preplace netloc axi_uartlite_1_UART 1 4 1 NJ
-preplace netloc microblaze_0_ILMB 1 2 1 710
+preplace netloc microblaze_0_ILMB 1 2 1 590
 preplace netloc sys_clk_1 1 0 3 NJ 140 NJ 140 NJ
-preplace netloc axi_interconnect_0_M02_AXI 1 0 4 0 830 NJ 830 NJ 830 1060
-preplace netloc proc_sys_reset_0_mb_reset 1 0 4 30 1060 290 1000 740 1010 1070
+preplace netloc axi_interconnect_0_M02_AXI 1 0 4 -98 830 NJ 800 NJ 810 980
+preplace netloc proc_sys_reset_0_mb_reset 1 0 4 -108 850 160 830 600 830 990
 preplace netloc axi_uartlite_2_UART 1 4 1 NJ
 preplace netloc intr_1 1 0 1 NJ
-preplace netloc axi_interconnect_0_M04_AXI 1 3 1 1110
+preplace netloc axi_interconnect_0_M04_AXI 1 3 1 1020
 preplace netloc lmb_bram_if_cntlr_0_BRAM_PORT 1 3 1 NJ
-preplace netloc S00_AXI_1 1 2 1 730
+preplace netloc S00_AXI_1 1 2 1 620
 preplace netloc clk_wiz_0_clk_out1 1 3 2 NJ 110 NJ
 preplace netloc axi_uartlite_0_UART 1 4 1 NJ
-preplace netloc axi_interconnect_0_M00_AXI 1 3 1 N
-preplace netloc proc_sys_reset_0_peripheral_aresetn 1 0 5 10 840 NJ 810 740 810 1090 800 NJ
-preplace netloc clk_wiz_0_clk_out2 1 0 5 20 1050 280 990 720 250 1120 780 NJ
-preplace netloc axi_interconnect_0_M01_AXI 1 3 1 1060
-preplace netloc mdm_0_MBDEBUG_0 1 1 1 260
+preplace netloc axi_interconnect_0_M00_AXI 1 3 1 1050
+preplace netloc proc_sys_reset_0_peripheral_aresetn 1 0 4 -128 710 NJ 710 650 250 1010
+preplace netloc clk_wiz_0_clk_out2 1 0 5 -118 840 150 820 630 820 1030 820 NJ
+preplace netloc axi_interconnect_0_M01_AXI 1 3 1 1040
+preplace netloc mdm_0_MBDEBUG_0 1 1 1 140
 preplace netloc clk_wiz_0_clk_out3 1 3 2 N 130 NJ
 preplace netloc clk_wiz_0_clk_out4 1 3 2 NJ 170 NJ
-preplace netloc axi_interconnect_0_M03_AXI 1 3 1 1100
-preplace netloc microblaze_0_DLMB 1 2 1 740
-levelinfo -pg 1 -20 140 500 900 1230 1360 -top 50 -bot 1160
+preplace netloc axi_interconnect_0_M03_AXI 1 3 1 1000
+preplace netloc microblaze_0_DLMB 1 2 1 610
+levelinfo -pg 1 -148 12 380 820 1170 1370 -top 70 -bot 1480
 ",
 }
 

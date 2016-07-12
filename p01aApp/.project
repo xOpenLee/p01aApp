@@ -29,10 +29,5 @@
 			<type>1</type>
 			<location>D:/proj/P01A/xilinxproj/p01aApp/src/SerialScreen/serialscreen.c</location>
 		</link>
-		<link>
-			<name>src/sched/sched.c</name>
-			<type>1</type>
-			<location>E:/timesched.c</location>
-		</link>
 	</linkedResources>
 </projectDescription>
