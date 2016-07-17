@@ -4,9 +4,16 @@
 #include "utils.h"
 #include "adv_config.h"
 #include "serialscreen.h"
-
+#include "sched.h"
+//#include "unistd.h"
 #define PROJ_NAME "P01A"
 #define PROJ_VERSION "V0.0.1"
+
+static void *ThreadFunc(void *arg)
+{
+	printf("#INFO: ThreadFunc %d\r\n", (int)arg);
+//	sleep(1);
+}
 
 /*******************************************************************************
 * º¯ÊýÃû³Æ:PrintVer
@@ -31,6 +38,7 @@ int main()
     SerialScreenInit();
     ad9518_config();
     ad9520_config();
+    //PthreadCreate("TstThread",1,ThreadFunc, 1);
 
     cleanup_platform();
 

@@ -430,8 +430,8 @@
 #define XPAR_M_APB_BASEADDR 0x61000000
 #define XPAR_M_APB_HIGHADDR 0x6100FFFF
 
-#define STDIN_BASEADDRESS 0x40600000
-#define STDOUT_BASEADDRESS 0x40600000
+#define STDIN_BASEADDRESS 0x40620000
+#define STDOUT_BASEADDRESS 0x40620000
 
 /******************************************************************/
 
