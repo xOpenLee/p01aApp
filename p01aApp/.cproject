@@ -39,6 +39,7 @@
 									<listOptionValue builtIn="false" value="&quot;D:\proj\P01A\xilinxproj\p01aApp\src\SerialScreen&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;D:\proj\P01A\xilinxproj\p01aApp\src\utils&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;D:\proj\P01A\xilinxproj\p01aApp\src\sched&quot;"/>
+									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/p01aApp/src/adv}&quot;"/>
 								</option>
 								<inputType id="xilinx.gnu.compiler.input.290985851" name="C source files" superClass="xilinx.gnu.compiler.input"/>
 							</tool>
@@ -210,5 +211,14 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId="com.xilinx.managedbuilder.ui.MBGCCManagedMakePerProjectProfileC"/>
 		</scannerConfigBuildInfo>
 	</storageModule>
-	<storageModule moduleId="refreshScope"/>
+	<storageModule moduleId="refreshScope" versionNumber="2">
+		<configuration configurationName="Debug">
+			<resource resourceType="PROJECT" workspacePath="/p01aApp"/>
+		</configuration>
+		<configuration configurationName="Release">
+			<resource resourceType="PROJECT" workspacePath="/p01aApp"/>
+		</configuration>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets"/>
+	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
 </cproject>
