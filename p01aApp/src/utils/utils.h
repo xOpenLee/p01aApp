@@ -10,5 +10,7 @@
 
 #define printf xil_printf
 
+#define SWAP_16(x)  ((((x) << 8) & 0xFF00 ) | (((x) >> 8)&0xFF))
+
 
 #endif /* UTILS_H_ */

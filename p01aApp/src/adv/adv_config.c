@@ -49,7 +49,7 @@ static int spi_write(unsigned int base, unsigned int val)
 	Xil_Out32(base, val);
 	check = Xil_In32(base);
 	if(check != val) {
-		printf("#ERR: spi write base = 0x%x val = 0x%x failed. \n", base, val);
+		printf("#ERR: spi write base = 0x%x val = 0x%x failed. \r\r\n", base, val);
 		return -1;
 	}
 
@@ -69,7 +69,7 @@ static int adv_write(unsigned int base, unsigned int rw_offset, unsigned int rw_
 	reg_val = ((offset << 16) & 0xFFFF0000) | ((val << 8) & 0xFF00);
 	ret = spi_write(base + rw_offset, reg_val);
 	if (ret < 0) {
-		printf("#ERR: adv9520_write offset = 0x%x, val = 0x%x failed\n", offset, val);
+		printf("#ERR: adv9520_write offset = 0x%x, val = 0x%x failed\r\n", offset, val);
 		return 0;
 	}
 	spi_write(ADV9520_BASE_ADDR + rw_trig, rw_trig_val);
@@ -84,7 +84,7 @@ static int adv_read(unsigned int base, unsigned int rw_offset, unsigned int rw_t
 	reg_val = ((offset << 16) & 0xFFFF0000) | 0x80000000;
 	ret = spi_write(base + rw_offset, reg_val);
 	if (ret < 0) {
-		printf("#ERR: adv9520_write offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9520_write offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 
@@ -99,7 +99,7 @@ static int adv9520_write(unsigned int offset, unsigned int val)
 	ret = adv_write(ADV9520_BASE_ADDR, ADV9520_SPI_RW_OFFSET, ADV9520_SPI_RW_TRIG,
 			ADV9520_SPI_W_TRIG_VAL, offset, val);
 	if (ret < 0) {
-		printf("#ERR: adv9520_write offset = 0x%x, val = 0x%x failed\n", offset, val);
+		printf("#ERR: adv9520_write offset = 0x%x, val = 0x%x failed\r\n", offset, val);
 		return 0;
 	}
 	return 0;
@@ -111,7 +111,7 @@ static int adv9520_read(unsigned int offset)
 	ret = adv_read(ADV9520_BASE_ADDR, ADV9520_SPI_RW_OFFSET,ADV9520_SPI_RW_TRIG,
 			ADV9520_SPI_R_TRIG_VAL, offset, ADV9520_SPI_READ_VAL_OFFSET);
 	if (ret < 0) {
-		printf("#ERR: adv9520_write offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9520_write offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 	return 0;
@@ -123,7 +123,7 @@ static int adv9520_tmp_write(unsigned int offset, unsigned int val)
 	ret = adv_write(ADV9520_TMP_BASE_ADDR, ADV9520_TMP_SPI_RW_OFFSET, ADV9520_TMP_SPI_RW_TRIG,
 			ADV9520_TMP_SPI_W_TRIG_VAL, offset, val);
 	if (ret < 0) {
-		printf("#ERR: adv9520_tmp_write offset = 0x%x, val = 0x%x failed\n", offset, val);
+		printf("#ERR: adv9520_tmp_write offset = 0x%x, val = 0x%x failed\r\n", offset, val);
 		return 0;
 	}
 	return 0;
@@ -135,7 +135,7 @@ static int adv9520_tmp_read(unsigned int offset)
 	ret = adv_read(ADV9520_TMP_BASE_ADDR, ADV9520_TMP_SPI_RW_OFFSET,ADV9520_TMP_SPI_RW_TRIG,
 			ADV9520_TMP_SPI_R_TRIG_VAL, offset, ADV9520_TMP_SPI_READ_VAL_OFFSET);
 	if (ret < 0) {
-		printf("#ERR: adv9520_tmp_read offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9520_tmp_read offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 	return 0;
@@ -147,7 +147,7 @@ static int adv9518_write(unsigned int offset, unsigned int val)
 	ret = adv_write(ADV9518_BASE_ADDR, ADV9518_SPI_RW_OFFSET, ADV9518_SPI_RW_TRIG,
 					ADV9518_SPI_W_TRIG_VAL, offset, val);
 	if (ret < 0) {
-		printf("#ERR: adv9518_write offset = 0x%x, val = 0x%x failed\n", offset, val);
+		printf("#ERR: adv9518_write offset = 0x%x, val = 0x%x failed\r\n", offset, val);
 		return 0;
 	}
 	return 0;
@@ -159,7 +159,7 @@ static int adv9518_read(unsigned int offset)
 	ret = adv_read(ADV9518_BASE_ADDR, ADV9518_SPI_RW_OFFSET, ADV9518_SPI_RW_TRIG,
 			ADV9518_SPI_R_TRIG_VAL, offset, ADV9518_SPI_READ_VAL_OFFSET);
 	if (ret < 0) {
-		printf("#ERR: adv9518_read offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9518_read offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 	return 0;
@@ -170,13 +170,13 @@ static int adv9520_write_check(unsigned int offset, unsigned int val)
 	int ret = 0, read_back;
 	ret = adv9520_write(offset, val);
 	if (ret < 0) {
-		printf("#ERR: adv9520_write_check offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9520_write_check offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 	delay_us(1);
 	read_back = adv9520_read(offset);
 	if(val != read_back)  {
-		printf("#ERR: adv9520_write_check val = 0x%x , read_back = 0x%x failed\n", val, read_back);
+		printf("#ERR: adv9520_write_check val = 0x%x , read_back = 0x%x failed\r\n", val, read_back);
 		return -1;
 	}
 
@@ -188,13 +188,13 @@ static int adv9518_write_check(unsigned int offset, unsigned int val)
 	int ret = 0, read_back;
 	ret = adv9518_write(offset, val);
 	if (ret < 0) {
-		printf("#ERR: adv9518_write offset = 0x%x failed\n", offset);
+		printf("#ERR: adv9518_write offset = 0x%x failed\r\n", offset);
 		return -1;
 	}
 	delay_us(1);
 	read_back = adv9518_read(offset);
 	if(val != read_back)  {
-		printf("#ERR: adv9518_read val = 0x%x , read_back = 0x%x failed\n", val, read_back);
+		printf("#ERR: adv9518_read val = 0x%x , read_back = 0x%x failed\r\n", val, read_back);
 		return -1;
 	}
 
