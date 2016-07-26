@@ -341,9 +341,11 @@ static int PrintCmdData(struct screen_cmd *ScreenCmd)
 	printf("\t head: 0x%04x\r\n", ScreenCmd->head);
 	printf("\t len: 0x%x\r\n", ScreenCmd->len);
 	printf("\t cmd: 0x%02x\r\n", ScreenCmd->cmd);
-	printf("\t data: ");
-	for (i = 0; i < ScreenCmd->len - 1; i++)
-		printf(" 0x%02x", ScreenCmd->data[i]);
+	printf("\t addr: 0x%02x\r\n", ScreenCmd->addr);
+	printf("\t data_len: 0x%02x\r\n", ScreenCmd->data_len);
+	printf("\t val:");
+	for (i = 0; i < ScreenCmd->data_len; i++)
+		printf(" 0x%02x", ScreenCmd->val[i]);
 	printf("\r\n");
 	return 0;
 
@@ -370,7 +372,6 @@ static int SendScreenData(unsigned char cmd, char* data, unsigned char DataLen)
 	send_len = sizeof(g_ScreenCmd.head) + sizeof(g_ScreenCmd.len)
 			   + sizeof(g_ScreenCmd.cmd) + DataLen;
 
-	PrintCmdData(&g_ScreenCmd);
 	ret = UartSend(&g_ScreenUartLite, &g_ScreenCmd, send_len);
 	if (ret != send_len) {
 		printf("#ERR: SendScreenData UartSend = %d Err.\r\n", ret);
@@ -428,6 +429,33 @@ static int ReadScreenDataReg(unsigned short RegAddr, unsigned char DataLen)
 	return SendScreenData(WRITE_DATA_REG, &send, sizeof(RegAddr) + sizeof(DataLen));
 }
 
+static int ProcRecvScreenData(struct screen_cmd *ScreenCmd)
+{
+	int i = 0;
+	if(ScreenCmd == NULL) {
+		printf("#ERR: ProcRecvScreenData ScreenCmd NULL.\r\n");
+		return -1;
+	}
+
+	if(ScreenCmd->cmd == READ_CTRL_REG){
+		ScreenCmd->addr = ScreenCmd->data[0];
+		ScreenCmd->data_len = ScreenCmd->data[1];
+		for (i = 0; i < ScreenCmd->data_len; i++)
+			ScreenCmd->val[i] = ScreenCmd->data[i + 2];
+	} else if(ScreenCmd->cmd == READ_DATA_REG) {
+		ScreenCmd->addr = (ScreenCmd->data[0]<<8)& 0xFF00 | (ScreenCmd->data[1]) & 0xFF;
+		ScreenCmd->data_len = ScreenCmd->data[2];
+		for (i = 0; i < ScreenCmd->data_len; i++)
+			ScreenCmd->val[i] = (ScreenCmd->data[2*i + 3]<<8) & 0xFF00 | (ScreenCmd->data[2*i + 4]) & 0xFF ;
+	} else {
+		printf("#ERR: ProcRecvScreenData CMD Err.\r\n");
+		return -2;
+	}
+
+	PrintCmdData(&g_ScreenCmd);
+
+	return 0;
+}
 
 
 void RecvScreenData(void)
@@ -436,9 +464,11 @@ void RecvScreenData(void)
 	unsigned short ret = 0, i = 0;
 
 	while(1) {
-#if 0
+#if 1
+		ret = ReadScreenCtrlReg(0x00, 1);
+		MB_Sleep(1000);
 		ret = UartRecv(&g_ScreenUartLite, &recv, sizeof(recv));
-		MB_Sleep(10);
+		MB_Sleep(100);
 		if( ret >= 5) {
 
 			for(i = 0; i < ret; i++)
@@ -446,7 +476,10 @@ void RecvScreenData(void)
 
 			if((recv[0] == FH0) && (recv[1] == FH1)) {
 				memcpy(&g_ScreenCmd, recv, ret);
-				PrintCmdData(&g_ScreenCmd);
+				ret = ProcRecvScreenData(&g_ScreenCmd);
+				if (ret < 0) {
+					printf("#ERR: ProcRecvScreenData Err.\r\n");
+				}
 			}else {
 				printf("#ERR: CMD recv err.\r\n");
 			}

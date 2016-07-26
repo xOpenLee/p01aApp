@@ -2,12 +2,15 @@
 #define  __serialscreen___
 #include "stdint.h"
 
-#define SCREEN_CMD_DATA_LEN (256)
+#define SCREEN_CMD_DATA_LEN (128)
 typedef struct screen_cmd{
 	short head;
 	unsigned char len;
-	char cmd;
+	unsigned char cmd;
 	char data[SCREEN_CMD_DATA_LEN];
+	unsigned short addr;
+	unsigned char data_len;
+	short val[SCREEN_CMD_DATA_LEN];
 }SCREEN_CMD;
 
 
